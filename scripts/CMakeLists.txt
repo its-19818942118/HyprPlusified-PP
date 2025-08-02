@@ -30,8 +30,8 @@ include_directories (
 
 set ( SOURCES_MON_MANGLER++
     src/monitorsMangler.cpp
-    include/MonitorsMangler/src/mangle2.cpp
-    include/MonitorsMangler/src/mangle3.cpp
+    include/MonitorsMangler/src/mangler.cpp
+    include/MonitorsMangler/src/argsParser.cpp
 )
 
 
