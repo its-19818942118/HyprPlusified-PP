@@ -68,28 +68,40 @@ int
             
         }
         
-        else if
-            ( wrkspcN == false || monN == false )
-        {
-            
-            std::println
-            (
-                "usage: {{ {} }} [workspace number] , [monitor name]" ,
-                argv [ 0 ]
-            )
-            ;
-            
-            return  1;
-            
-        }
-        
     }
     
     if
-    ( workspacesN || monN )
+        ( workspacesN != false && monN != false )
+    {
+        
         alt_monitorMangling ( workspacesN , monitors );
+        
+        return 0;
+        
+    }
+    
     else
-        std::println ( "Atleast 1 workspace count and monitor name." );
-    return 0;
+    {
+        
+        std::println
+            (
+                "\033[31mError:\033[0m "
+                "\033[33mAtleast 1 workspace count and monitor name required.\033[0m"
+            )
+        ;
+        std::println
+            (
+                "\033[34mUsage:\033[0m {{ {} }} "
+                "[ workspace number ] , [ Monitor 1 ] [ Monitor 2 ]\n"
+                "\033[35mHint:\033[0m "
+                "To get Monitor names use \033[36mhyprctl monitors\033[0m.\n"
+                "\033[32mExample:\033[0m "
+                "\033[36m{} eDP-1 HDMI-A-1\033[0m"
+                , argv [ 0 ] , argv [ 0 ]
+            )
+        ;
+        return 1;
+        
+    }
     
 }
