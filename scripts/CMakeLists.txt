@@ -7,24 +7,40 @@ project ( hyprScripts++
     LANGUAGES CXX
 )
 
+set ( CMAKE_STOP_ON_ERROR 1 )
 set ( CMAKE_CXX_STANDARD 26 )
 set ( CMAKE_CXX_STANDARD_REQUIRED true )
 
+option ( FORCE_COLORED_OUTPUT
+    "Always produce ANSI-colored output (GNU/Clang only)." TRUE
+)
+
+if ( ${FORCE_COLORED_OUTPUT} )
+    if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
+        add_compile_options ( -fdiagnostics-color=always )
+    elseif ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
+        add_compile_options ( -fcolor-diagnostics )
+    endif ( )
+endif ( )
+
+find_package ( fmt REQUIRED )
+
 add_compile_options (
     -O3
-    -march=native
-    -mtune=native
     -flto
     -static
     -ffast-math
+    -march=native
+    -mtune=native
     -flto=jobserver
+    -fdiagnostics-color=always
 )
 
 set ( CMAKE_RUNTIME_OUTPUT_DIRECTORY
     "$ENV{HOME}/.local/share/bin/"
 )
 
-include_directories (
+include_directories ( include/
     include/MonitorsMangler/
 )
 
@@ -34,39 +50,34 @@ set ( SOURCES_MON_MANGLER++
     include/MonitorsMangler/src/argsParser.cpp
 )
 
-
-# add_executable ( VolumeControl
-#     src/volumeControl.cpp
-# )
-
-# add_executable ( VolumeControl++
-#     src/volumeControl_im.cpp
-# )
-
-# add_executable ( HyprResize
-#     src/hyprResize.cpp
-# )
-
 add_executable ( MonitorsMangler++
     ${SOURCES_MON_MANGLER++}
 )
 
-# add_executable ( MenuFinder
-#     src/menuFinder.cpp
-# )
+target_link_libraries ( MonitorsMangler++
+    PRIVATE
+    fmt::fmt
+)
 
-# add_executable ( Config
-#     src/config.cpp
-# )
+add_executable ( Parser++
+    src/argsIterator.cpp
+)
 
-# add_executable ( Cli
-#     src/cli.cpp
-# )
+target_link_libraries ( Parser++
+    PRIVATE
+    fmt::fmt
+)
 
-# add_executable ( Dencoder
-#     src/dencoder.cpp
-# )
+add_executable ( VolumeControl++
+    src/volumeControl_im.cpp
+)
 
-# add_executable ( MouseKeys
-#     src/mousekeys.cpp
-# )
+target_link_libraries ( VolumeControl++
+    PRIVATE
+    fmt::fmt
+)
+
+
+add_executable ( PrintScr src/prtsc.cpp )
+
+add_executable ( specialWorkspaces src/specialWorkspaces.cpp )
