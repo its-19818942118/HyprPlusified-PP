@@ -65,7 +65,7 @@ std::string
 {
     
     std::string
-            layouts =
+        layouts =
         f_Str_exec ( "hyprctl layouts" );
     ;
     
@@ -99,7 +99,7 @@ std::string
             }
         }
         
-        std::replace ( layouts.end()-2 , layouts.end()-1 , '\n' , ' ' );
+        std::replace ( layouts.end ( )-2 , layouts.end ( ) - 1 , '\n' , ' ' );
         
         return
             "  \033[34m->\033[36m " + layouts + "\033[0m"
@@ -164,6 +164,7 @@ std::string
     ;
     
     // supportedLayouts = subtract_substring ( f_Str_get_layoutModes(false) ,supportedLayouts );
+    
     supportedLayouts = subtract_substring ( supportedLayouts , f_Str_get_layoutModes(false) );
     
     return
@@ -177,26 +178,24 @@ std::string
     ( bool format = true )
 {
     
+    std::string
+        layoutStr =
+        f_Str_exec
+        ( "hyprctl getoption general:layout" )
+    ;
     
     if
         ( format )
     {
         
-        std::string layoutStr = f_Str_exec ( "hyprctl getoption general:layout" );
         
-        // size_t pos = 0;
+        layoutStr.replace
+            ( layoutStr.find ( "str:" ) , 4 ,  "  \033[34mstr:\033[0m" )
+        ;
         
-        // while
-        //     ( ( pos = layoutStr.find ( "str:" ) ) != std::string::npos )
-        // {
-            
-        //     layoutStr.replace ( 1 , 4 , "\033[34mstr:\033[0m" );
-        //     pos += 5;
-            
-        // }
-        
-        layoutStr.replace ( layoutStr.find ( "str:" ) , 4 ,  "  \033[34mstr:\033[0m" );
-        layoutStr.replace ( layoutStr.find ( "set:" ) , 4 ,  "  \033[34mset:\033[0m" );
+        layoutStr.replace
+            ( layoutStr.find ( "set:" ) , 4 ,  "  \033[34mset:\033[0m" )
+        ;
         
         return
             layoutStr
@@ -207,7 +206,11 @@ std::string
     else
     {
         
-        std::string layoutStr = f_Str_exec ( "hyprctl getoption general:layout" );
+        layoutStr =
+            f_Str_exec
+            ( "hyprctl getoption general:layout" )
+        ;
+        
         return
             layoutStr
         ;
@@ -221,7 +224,7 @@ void
     ( void )
 {
     
-    std::string layout = cur_layoutMode();
+    std::string layout = cur_layoutMode ( );
     
     if
         ( layout.find ( "str: dwindle" ) != std::string::npos )

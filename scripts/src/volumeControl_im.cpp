@@ -1,4 +1,5 @@
 #include <cctype>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <cstddef>
@@ -6,6 +7,8 @@
 #include <algorithm>
 #include <fmt/base.h>
 #include <fmt/format.h>
+
+using namespace std::string_literals;
 
 namespace
     VolCpp
@@ -57,39 +60,53 @@ namespace
     
 }
 
+enum class
+    e_act
+    {
+        /// @e Increase Volume
+        incr ,
+        /// @e Decrease Volume
+        decr ,
+        /// @e Toggle Volume Mute
+        tmute ,
+        /// @e Volume Mute Status
+        ismute ,
+        /// @e Human Redable Volume
+        hvolume ,
+        /// @e Only Volume
+        ovolume
+    }
+;
+
 std::string
-    fStr_getVolume
-    ( bool onlyVol = true )
+    fstr_getVolume
+    ( e_act act = e_act::ovolume )
 {
     
-    std::string
-        volume
-        {
-            fmt::format
-            (
-                "{}" ,
-                VolCpp::system("pamixer --get-volume-human")
-            )
-        }
-    ;
+    std::string volume = VolCpp::system ( "pamixer --get-volume"s );
+    
+    volume.erase ( volume.find ( "\n" ) );
     
     if
-        ( onlyVol )
+        ( act == e_act::hvolume )
     {
         
-        return
-            volume =
-            volume.replace ( volume.find ( "%" ) , 1 , "\033[P" )
-        ;
+        volume = volume + '%';
         
     }
     
-    return
-        volume.replace // remove the return value...
-        ( volume.end ( ) - 1 , volume.end ( ) , "\033[K" )
-    ;
+    return volume;
     
 }
+
+// std::string
+//     fstr_getVolMute
+//     ( e_act act = e_act::ismute )
+// {
+    
+    
+    
+// }
 
 void
     f_printHelp
@@ -100,14 +117,14 @@ void
         helpStr =
         fmt::format
         (
-            "\033[34m[\033[0m"
-            " \033[32m" "VolumeControl++" "\033[0m "
-            "\033[34m]\033[0m\n"
-            "\033[35m"
+            "\x1b[34m[\x1b[0m"
+            " \x1b[32m" "VolumeControl++" "\x1b[0m "
+            "\x1b[34m]\x1b[0m\n"
+            "\x1b[35m"
             "  \"A Volume Controller Program written in C++ for hyprland.\""
-            "\033[0m\n"
-            "\033[34m::\033[0m"
-            " \033[38;2;235;170;255mUsage Options\033[34m:\033[0m"
+            "\x1b[0m\n"
+            "\x1b[34m::\x1b[0m"
+            " \x1b[38;2;235;170;255mUsage Options\x1b[34m:\x1b[0m"
         )
     ;
     
@@ -147,12 +164,6 @@ int
         if
             (
                 !arguments.empty ( ) &&
-                std::all_of
-                (
-                    arguments.begin ( ) ,
-                    arguments.end ( ) ,
-                    isprint
-                ) &&
                 arguments == "-h" ||
                 arguments == "--help"
             )
@@ -164,74 +175,64 @@ int
             
         }
         
+        if
+            ( incrF == false && arguments == "-i" )
+        {
+            
+            incrF = true;
+            is_incr = true;
+            fmt::println ( "volume incr ({1:s}) pos: {0:d}" , argsPos , arguments );
+            
+        }
+        
+        else if
+            ( decrF == false && arguments == "-d" )
+        {
+            
+            decrF = true;
+            is_decr = true;
+            fmt::println ( "volume decr ({1:s}) pos: {0:d}" , argsPos , arguments );
+            
+        }
+        
         else if
             (
-                !arguments.empty ( ) &&
+                incrF == true &&
+                decrF == false &&
                 std::all_of
-                ( arguments.begin ( ) , arguments.end ( ) , isprint )
+                ( arguments.begin ( ) , arguments.end ( ) , isdigit )
             )
         {
             
-            if
-                ( incrF == false && arguments == "-i" )
-            {
-                
-                incrF = true;
-                is_incr = true;
-                fmt::println ( "incr pos: {:d}" , argsPos );
-                
-            }
+            incrF = false;
+            fmt::println ( "volume incr number is: {:s}" , arguments );
             
-            else if
-                ( decrF == false && arguments == "-d" )
-            {
-                
-                decrF = true;
-                is_decr = true;
-                fmt::println ( "decr pos: {:d}" , argsPos );
-                
-            }
+        }
+        
+        else if
+            (
+                decrF == true &&
+                incrF == false &&
+                std::all_of
+                ( arguments.begin ( ) , arguments.end ( ) , isdigit )
+            )
+        {
             
-            else if
-                (
-                    incrF == true &&
-                    decrF == false &&
-                    std::all_of
-                    ( arguments.begin ( ) , arguments.end ( ) , isdigit )
-                )
-            {
-                
-                incrF = false;
-                fmt::println ( "incr number is: {:s}" , arguments );
-                
-            }
+            decrF = false;
+            fmt::println ( "volume decr number is: {:s}" , arguments );
             
-            else if
-                (
-                    decrF == true &&
-                    incrF == false &&
-                    std::all_of
-                    ( arguments.begin ( ) , arguments.end ( ) , isdigit )
-                )
-            {
-                
-                decrF = false;
-                fmt::println ( "decr number is: {:s}" , arguments );
-                
-            }
+        }
+        
+        else if
+            (
+                is_incr == true && is_decr == true &&
+                std::all_of
+                ( arguments.begin ( ) , arguments.end ( ) , isdigit )
+            )
+        {
             
-            else if
-                (
-                    is_incr == true && is_decr == true &&
-                    std::all_of
-                    ( arguments.begin ( ) , arguments.end ( ) , isdigit )
-                )
-            {
-                
-                fmt::println ( "incr by: {}" , arguments );
-                fmt::println ( "decr by: {}" , arguments );
-                
-            }
+            fmt::println ( "volume incr by: {}" , arguments );
+            fmt::println ( "volume decr by: {}" , arguments );
             
         }
         
@@ -277,15 +278,17 @@ int
     ( int argC , char* argV [ ] )
 {
     
+    // fmt::println ( "{}" , fStr_getVolume ( ) );
+    
+    // f_ctrlVolume("Hello World" , "-d");
+    
+    // std::cout << fstr_getVolume ( e_act::hvolume );
+    
+    // f_ctrlVolume ( 10 , e_act::incr );
+    
     return
-        fInt_argsParser
+        fInt_argsIterator
         ( argC , argV )
     ;
-    
-    for
-        ( int i { 30 }; i <= 37; ++i )
-    {
-        fmt::println("\033[{}mHI!\033[0m",i);
-    }
     
 }

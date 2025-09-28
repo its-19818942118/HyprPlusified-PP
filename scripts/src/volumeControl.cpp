@@ -182,32 +182,35 @@ void
     ;
     
     if
-        ( ctrl == 'i' ) // check if volume needs to be incr
-    {
-        
-        cmd =
-            "dunstify -a VolumeControl -t " +
-            std::to_string ( exprTime ) + /* " \"Current Volume:\"" + */
-            " \"VolumeControl\" " +
-            ( f_Str_getVolume ( ) ) + " -h int:value:" +
-            f_Str_getVolume ( true ) + "-h string:x-dunst-stack-tag:test"
-        ;
-    }
-    
-    else
-      if
-        ( ctrl == 'd' ) // check if volume needs to be decr
+        ( ctrl == 'i' || ctrl == 'd' ) // check if volume needs to be incr
     {
         
         cmd =
             "notify-send -a VolumeControl -t " +
             std::to_string ( exprTime ) + " " +
-            ( f_Str_getVolume ( ) ) +
-            " -h int:value:" +
-            f_Str_getVolume ( true ) + "-h string:x-dunst-stack-tag:test"
+            " \"Current Volume:\"" +
+            ( f_Str_getVolume ( ) )
+            + " -h int:value:" +
+            std::to_string ( ( std::stoi ( f_Str_getVolume ( true ) ) / 1.5 ) )
+            // + " -h string:volume"
         ;
-        
     }
+    
+    // else
+    //   if
+    //     ( ctrl == 'd' ) // check if volume needs to be decr
+    // {
+        
+    //     cmd =
+    //         "notify-send -a VolumeControl -t " +
+    //         std::to_string ( exprTime ) + " " +
+    //         ( f_Str_getVolume ( ) )
+    //         // +
+    //         // " -h int:value:" +
+    //         // f_Str_getVolume ( true ) + "-h string:x-dunst-stack-tag:test"
+    //     ;
+        
+    // }
     
     std::cout
         <<  cmd
@@ -225,10 +228,10 @@ std::string
     std::string
         v_Str_cmd ,
         v_Str_incrVolume =
-            "pamixer -i " +
+            "pamixer --allow-boost --set-limit 150 -i " +
         std::to_string ( step ) ,
         v_Str_decrVolume =
-            "pamixer -d " +
+            "pamixer --allow-boost --set-limit 150 -d " +
         std::to_string ( step )
     ;
     
@@ -325,17 +328,17 @@ int
                     ( i + 1 < argc )
                 {
                     
-                    f_Str_sendVolNotif ( 'i' );
-                    
                     f_Str_VolumeControl ( 'i' , std::stoi ( argv [ i + 1 ] ) );
+                    
+                    f_Str_sendVolNotif ( 'i' );
                     
                     break;
                     
                 }
                 
-                f_Str_sendVolNotif ( 'i' );
-                
                 f_Str_VolumeControl ( 'i' );
+                
+                f_Str_sendVolNotif ( 'i' );
                 
                 break;
                 
@@ -350,17 +353,17 @@ int
                     ( i + 1 < argc )
                 {
                     
-                    f_Str_sendVolNotif ( 'i' );
-                    
                     f_Str_VolumeControl ( 'd' , std::stoi ( argv [ i + 1 ] ) );
+                    
+                    f_Str_sendVolNotif ( 'i' );
                     
                     break;
                     
                 }
                 
-                f_Str_sendVolNotif ( 'i' );
-                
                 f_Str_VolumeControl ( 'd' );
+                
+                f_Str_sendVolNotif ( 'i' );
                 
                 break;
                 
@@ -398,6 +401,8 @@ int
         f_Int_argsParser
         ( argc , argv )
     ;
+    
+    // f_Str_sendVolNotif('i');
     
 }
 

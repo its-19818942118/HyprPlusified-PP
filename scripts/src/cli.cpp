@@ -1,104 +1,7 @@
-// #include <cstddef>
-// #include <print>
-// #include <unistd.h>
-// #include <sys/ioctl.h>
-
-// void
-//     get_termSize
-//     ( int &rows , int &cols )
-// {
-//     struct winsize w;
-//     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-//     rows = w.ws_row;
-//     cols = w.ws_col;
-// }
-
-// int
-//     colsChecker
-//     ( int &cols )
-// {
-    
-//     if
-//         ( ( cols / 2 - 1 ) % 2 == 0 )
-//     {
-        
-//         return 
-        
-//     }
-    
-// }
-
-// void
-//     print_mainHeader
-//     ( int &rows , int &cols )
-// {
-    
-//     std::print ( "╭" );
-    
-//     for
-//     ( size_t i { 0 }; ( i < cols / 2 - 1 ); ++i )
-//     {
-        
-//         std::print ( "{}" , "─" );
-        
-//     }
-    
-//     std::println ( "{}" , "╮" );
-    
-//     std::print ( "{}" , "│" );
-    
-//     for
-//         ( size_t i { 0 }; ( i < cols / 4 - 2 ); ++i )
-//     {
-        
-//         std::print ( " " );
-        
-//     }
-    
-//     std::print ( "Cli" );
-    
-    
-    
-//     std::println ( "{}" , "│" );
-    
-//     // -----------------------------------------------------------------------//
-    
-//     std::print ( "╰" );
-    
-//     for
-//     ( size_t i { 0 }; ( i < cols / 2 - 1 ); ++i )
-//     {
-        
-//         std::print ( "{}" , "─" );
-        
-//     }
-    
-//     std::println ( "{}" , "╯" );
-    
-    
-// }
-
-// int
-//     main
-//     ( )
-// {
-    
-//     int
-//         rows , cols
-//     ;
-    
-//     get_termSize ( rows , cols );
-    
-//     std::println ( "Welcome To the CLI" );
-    
-//     std::println ( "Terminal rows: {} , cols: {} " , rows , cols );
-    
-//     print_mainHeader ( rows , cols );
-    
-// }
-
 #include <print>
-#include <cstddef>
+#include <chrono>
+#include <cstdio>
+#include <csignal>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
@@ -106,34 +9,59 @@ void
     get_termSize
     ( int &rows , int &cols )
 {
+    
     struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    ioctl ( STDOUT_FILENO , TIOCGWINSZ , &w );
     rows = w.ws_row;
     cols = w.ws_col;
+    
 }
 
-int
-    main
-    ( void )
+void
+    print
+    ( [[maybe_unused]] int rows , [[maybe_unused]] int cols )
 {
     
-    int rows , cols;
+    std::string frame{};
     
-    get_termSize(rows, cols);
-    
-    std::println("rows: {} , cols: {}" , rows , cols);
-    
-    
-    // We are checking if the integar `i` is greater than cols. and printing out the exact number of stuff = cols.
-    // if cols = 4? i will add +1 until i = 4 which is then i = cols
-    for
-        ( size_t i { 0 }; i < cols; ++i )
-    {
+    for (auto i{1}; i <= cols; ++i) {
         
-        std::print("-");
+        frame += std::format("{}", "━");
         
     }
     
-    std::print("\n{}" , "|");
+    frame += '\n';
     
+    for
+        ( auto i { 2 }; i <= rows - 1; ++i )
+    {
+        
+        frame += std::format ("\033[{};1H┃", i); // Left border at column 1
+        frame += std::format ("\033[{};{}H┃\n\r", i, cols); // Right border at last column
+    }
+
+    for (auto i{1}; i <= cols; ++i) {
+
+        frame += std::format("{}", "━");
+    }
+
+    std::print("{}", frame.data());
+    std::fflush(stdout);
+}
+
+int rows, cols;
+
+void handleResise(int) {
+  std::print("\033[3J\033[2J\033[H");
+  std::fflush(stdout);
+  get_termSize(rows, cols);
+  print(rows, cols);
+}
+
+int main() {
+
+  std::signal(SIGWINCH, handleResise);
+
+  while (true) {
+  }
 }
